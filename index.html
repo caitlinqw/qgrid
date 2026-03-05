@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QGrid by Qwasar</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b2243;
+    --surface: #0d2d56;
+    --surface2: #112f5a;
+    --surface3: #163a6b;
+    --border: #1e4a80;
+    --accent: #5fb9e9;
+    --accent2: #fcd900;
+    --accent3: #a8d9f5;
+    --text: #ffffff;
+    --text2: #a8c4dc;
+    --text3: #5a7a9a;
+    --danger: #ff4d6a;
+    --warning: #fcd900;
+    --success: #4dffa3;
+    --font-display: 'Montserrat', sans-serif;
+    --font-mono: 'Montserrat', sans-serif;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px; height: 52px;
+    background: var(--surface);
+    border-bottom: 3px solid var(--accent2);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 900; font-size: 20px;
+    letter-spacing: -0.5px;
+    color: var(--white);
+    margin-right: 8px;
+  }
+  .logo span { color: var(--accent2); font-weight: 900; opacity: 1; }
+  #topbar .spacer { flex: 1; }
+  .tab-btn {
+    background: none; border: none; color: var(--text2);
+    font-family: var(--font-mono); font-size: 12px;
+    padding: 6px 14px; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tab-btn:hover { background: var(--surface3); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent); color: white; font-weight: 500;
+  }
+  .icon-btn {
+    background: var(--surface3); border: 1px solid var(--border);
+    color: var(--text2); padding: 6px 12px; border-radius: 6px;
+    cursor: pointer; font-family: var(--font-mono); font-size: 12px;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--text); }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ── SIDEBAR ── */
+  #main { display: flex; flex: 1; overflow: hidden; }
+  #sidebar {
+    width: 230px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 14px 14px 6px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text3); font-weight: 700;
+  }
+  /* WORKSPACE ITEMS */
+  .ws-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px 8px 14px; cursor: pointer;
+    transition: background 0.1s; color: var(--text2); font-size: 13px;
+    font-weight: 600; border-left: 3px solid transparent;
+    user-select: none;
+  }
+  .ws-item:hover { background: var(--surface2); color: var(--text); }
+  .ws-item.active { background: var(--surface2); color: var(--text); border-left-color: var(--accent2); }
+  .ws-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .ws-chevron { margin-left: auto; font-size: 10px; opacity: 0.5; transition: transform 0.15s; }
+  .ws-item.active .ws-chevron { transform: rotate(90deg); opacity: 1; }
+  .ws-actions { display: flex; gap: 2px; margin-left: auto; opacity: 0; transition: opacity 0.15s; }
+  .ws-item:hover .ws-actions { opacity: 1; }
+  .ws-action-btn {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 11px; padding: 2px 4px; border-radius: 3px; transition: all 0.1s;
+  }
+  .ws-action-btn:hover { background: var(--surface3); color: var(--text); }
+  /* TABLE ITEMS inside workspace */
+  .table-items { display: none; }
+  .table-items.expanded { display: block; }
+  .tbl-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 10px 6px 32px; cursor: pointer;
+    transition: background 0.1s; color: var(--text3); font-size: 12px;
+    font-weight: 500; border-left: 3px solid transparent;
+    user-select: none;
+  }
+  .tbl-item:hover { background: var(--surface2); color: var(--text2); }
+  .tbl-item.active { background: var(--surface3); color: var(--text); border-left-color: var(--accent); }
+  .tbl-icon { font-size: 11px; opacity: 0.7; }
+  .tbl-actions { display: flex; gap: 2px; margin-left: auto; opacity: 0; transition: opacity 0.15s; }
+  .tbl-item:hover .tbl-actions { opacity: 1; }
+  .add-table-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px 7px 32px; cursor: pointer;
+    color: var(--text3); font-size: 11px; font-weight: 600;
+    transition: color 0.15s; background: none; border: none; width: 100%;
+    font-family: var(--font-display); text-align: left;
+  }
+  .add-table-btn:hover { color: var(--accent); }
+  .base-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; cursor: pointer;
+    border-radius: 0; transition: background 0.1s;
+    color: var(--text2); font-size: 13px;
+    border-left: 2px solid transparent;
+    user-select: none;
+  }
+  .base-item:hover { background: var(--surface2); color: var(--text); }
+  .base-item.active { background: var(--surface2); color: var(--text); border-left-color: var(--accent); }
+  .base-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  #sidebar-footer {
+    margin-top: auto; padding: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .add-base-btn {
+    width: 100%; padding: 8px; border-radius: var(--radius);
+    background: none; border: 1px dashed var(--border);
+    color: var(--text3); font-family: var(--font-mono); font-size: 12px;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .add-base-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── CONTENT ── */
+  #content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── TABLE HEADER ── */
+  #table-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .table-title {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    color: var(--text);
+  }
+  .table-title-input {
+    background: none; border: none; color: var(--text);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    outline: none; padding: 2px 6px; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .table-title-input:focus { background: var(--surface3); }
+  .view-tabs { display: flex; gap: 2px; }
+  .view-tab {
+    padding: 5px 12px; border-radius: 5px; cursor: pointer;
+    background: none; border: none; color: var(--text3);
+    font-family: var(--font-mono); font-size: 12px; transition: all 0.15s;
+  }
+  .view-tab:hover { color: var(--text2); background: var(--surface2); }
+  .view-tab.active { color: var(--accent); background: rgba(124,106,255,0.12); }
+  #search-input {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 12px; border-radius: 6px;
+    font-family: var(--font-mono); font-size: 12px; outline: none;
+    width: 180px; transition: border-color 0.15s;
+  }
+  #search-input:focus { border-color: var(--accent); }
+  #search-input::placeholder { color: var(--text3); }
+
+  /* ── GRID VIEW ── */
+  #grid-container {
+    flex: 1; overflow: auto;
+    position: relative;
+  }
+  #grid-table {
+    border-collapse: collapse;
+    min-width: 100%;
+    table-layout: fixed;
+  }
+  #grid-table thead th {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 0;
+    position: sticky; top: 0; z-index: 10;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .th-inner {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; cursor: pointer;
+    font-size: 11px; font-weight: 500; color: var(--text2);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .th-inner:hover { color: var(--text); }
+  .th-type { font-size: 10px; opacity: 0.6; }
+  .th-sort { margin-left: auto; opacity: 0; transition: opacity 0.15s; }
+  .th-inner:hover .th-sort { opacity: 1; }
+  .th-add {
+    background: var(--surface); border: none;
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 8px 14px; cursor: pointer; color: var(--text3);
+    font-size: 16px; position: sticky; top: 0; z-index: 10;
+    transition: color 0.15s;
+  }
+  .th-add:hover { color: var(--accent); }
+  .th-row-num {
+    width: 48px; min-width: 48px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; left: 0; z-index: 20;
+  }
+
+  #grid-table tbody tr {
+    transition: background 0.1s;
+  }
+  #grid-table tbody tr:hover { background: rgba(124,106,255,0.04); }
+  #grid-table tbody tr.selected { background: rgba(124,106,255,0.1); }
+
+  #grid-table tbody td {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0; vertical-align: top;
+    position: relative;
+  }
+  .td-row-num {
+    padding: 10px 8px; text-align: center; color: var(--text3);
+    font-size: 11px; position: sticky; left: 0;
+    background: var(--surface); z-index: 5;
+  }
+  tr:hover .td-row-num { background: var(--surface2); }
+  .cell-input {
+    width: 100%; min-height: 36px;
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-mono); font-size: 13px;
+    padding: 9px 12px; resize: none; overflow: hidden;
+    transition: background 0.1s;
+  }
+  .cell-input:focus {
+    background: var(--surface2);
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .cell-select {
+    width: 100%; height: 36px;
+    background: var(--surface); border: none; outline: none;
+    color: var(--text); font-family: var(--font-mono); font-size: 13px;
+    padding: 0 12px; cursor: pointer;
+  }
+  .cell-select:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+  .cell-checkbox {
+    display: flex; align-items: center; justify-content: center;
+    height: 36px;
+  }
+  .cell-checkbox input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); }
+
+  .tag-cell { padding: 6px 8px; display: flex; gap: 4px; flex-wrap: wrap; min-height: 36px; }
+  .tag {
+    background: rgba(124,106,255,0.2); color: var(--accent);
+    padding: 2px 8px; border-radius: 3px; font-size: 11px;
+  }
+  .tag.green { background: rgba(74,223,163,0.15); color: var(--accent3); }
+  .tag.red { background: rgba(255,77,106,0.15); color: var(--danger); }
+  .tag.yellow { background: rgba(255,179,71,0.15); color: var(--warning); }
+  .file-cell { padding: 6px 8px; min-height: 36px; display: flex; align-items: center; gap: 6px; }
+  .file-chip {
+    background: var(--surface3); border: 1px solid var(--border);
+    color: var(--text2); padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; cursor: pointer; max-width: 120px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .file-chip:hover { border-color: var(--accent2); color: var(--accent2); }
+  .file-upload-btn {
+    background: none; border: 1px dashed var(--border);
+    color: var(--text3); padding: 3px 8px; border-radius: 4px;
+    font-size: 11px; cursor: pointer; transition: all 0.15s;
+    font-family: var(--font-mono);
+  }
+  .file-upload-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .add-row-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 16px; color: var(--text3);
+    cursor: pointer; font-size: 12px; border-bottom: 1px solid var(--border);
+    transition: color 0.15s;
+    background: none; border: none; width: 100%;
+    font-family: var(--font-mono); text-align: left;
+  }
+  .add-row-btn:hover { color: var(--accent); background: rgba(124,106,255,0.04); }
+
+  /* ── KANBAN VIEW ── */
+  #kanban-container {
+    flex: 1; overflow: auto; padding: 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .kanban-col {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); width: 260px; flex-shrink: 0;
+  }
+  .kanban-col-header {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kanban-col-title {
+    font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  }
+  .kanban-count {
+    background: var(--surface3); color: var(--text2);
+    padding: 1px 7px; border-radius: 10px; font-size: 11px;
+  }
+  .kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+  .kanban-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .kanban-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .kanban-card-title { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .kanban-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ── GALLERY VIEW ── */
+  #gallery-container {
+    flex: 1; overflow: auto; padding: 20px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px; align-content: start;
+  }
+  .gallery-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .gallery-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .gallery-card-img {
+    height: 120px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; border-bottom: 1px solid var(--border);
+  }
+  .gallery-card-body { padding: 12px; }
+  .gallery-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+
+  /* ── PANELS ── */
+  .panel-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.15s;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 24px;
+    min-width: 360px; max-width: 560px; width: 100%;
+    animation: slideUp 0.2s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .panel-title {
+    font-family: var(--font-display); font-size: 17px; font-weight: 700;
+    margin-bottom: 20px; color: var(--text);
+  }
+  .field-row { margin-bottom: 14px; }
+  .field-label {
+    display: block; font-size: 11px; color: var(--text2);
+    letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .field-input, .field-select, .field-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 9px 12px; border-radius: var(--radius);
+    font-family: var(--font-mono); font-size: 13px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--accent); }
+  .field-textarea { min-height: 80px; resize: vertical; }
+  .field-select option { background: var(--surface2); }
+  .panel-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .btn-primary {
+    background: var(--accent); color: white; border: none;
+    padding: 9px 20px; border-radius: var(--radius); cursor: pointer;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary {
+    background: var(--surface3); border: 1px solid var(--border);
+    color: var(--text2); padding: 9px 16px; border-radius: var(--radius);
+    cursor: pointer; font-family: var(--font-mono); font-size: 13px;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--text2); }
+  .btn-danger {
+    background: rgba(255,77,106,0.15); border: 1px solid var(--danger);
+    color: var(--danger); padding: 9px 16px; border-radius: var(--radius);
+    cursor: pointer; font-family: var(--font-mono); font-size: 13px;
+  }
+
+  /* ── ROW DETAIL PANEL ── */
+  #row-panel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 420px;
+    background: var(--surface); border-left: 1px solid var(--border);
+    z-index: 150; overflow-y: auto;
+    transform: translateX(100%); transition: transform 0.25s;
+    padding: 24px;
+  }
+  #row-panel.open { transform: translateX(0); }
+  .row-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .row-panel-title {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  }
+  .row-field { margin-bottom: 16px; }
+  .row-field-label {
+    font-size: 10px; color: var(--text3); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .row-field-value {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 9px 12px; min-height: 36px;
+    color: var(--text);
+  }
+  .row-field-edit {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 9px 12px;
+    width: 100%; color: var(--text); font-family: var(--font-mono);
+    font-size: 13px; outline: none; resize: vertical;
+    transition: border-color 0.15s;
+  }
+  .row-field-edit:focus { border-color: var(--accent); }
+
+  /* ── AUTOMATIONS ── */
+  #automations-view { flex: 1; overflow-y: auto; padding: 24px; }
+  .auto-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .auto-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .auto-info { flex: 1; }
+  .auto-name { font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .auto-desc { font-size: 11px; color: var(--text2); }
+  .toggle {
+    width: 36px; height: 20px; background: var(--surface3);
+    border-radius: 10px; cursor: pointer; position: relative; flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%; background: white;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* ── ALERTS VIEW ── */
+  #alerts-view { flex: 1; overflow-y: auto; padding: 24px; }
+  .alert-log {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 16px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .alert-dot.info { background: var(--accent); }
+  .alert-dot.warn { background: var(--warning); }
+  .alert-dot.ok { background: var(--success); }
+  .alert-log-msg { flex: 1; }
+  .alert-log-time { font-size: 11px; color: var(--text3); }
+
+  /* ── STATS BAR ── */
+  #stats-bar {
+    display: flex; align-items: center; gap: 20px;
+    padding: 8px 20px; background: var(--surface);
+    border-top: 1px solid var(--border); flex-shrink: 0;
+    font-size: 11px; color: var(--text3);
+  }
+  .stat-item { display: flex; gap: 6px; }
+  .stat-val { color: var(--text2); font-weight: 500; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; flex: 1; gap: 14px; opacity: 0.5;
+    padding: 60px;
+  }
+  .empty-state-icon { font-size: 40px; }
+  .empty-state-text { font-size: 14px; color: var(--text2); text-align: center; }
+
+  /* ── FORMULA CELL ── */
+  .formula-badge {
+    background: rgba(74,223,163,0.1); color: var(--accent3);
+    border: 1px solid rgba(74,223,163,0.2);
+    padding: 2px 8px; border-radius: 3px; font-size: 12px;
+    display: inline-flex; align-items: center;
+  }
+
+  /* ── COLUMN RESIZE ── */
+  .th-resize {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 4px;
+    cursor: col-resize; background: transparent;
+    transition: background 0.15s;
+  }
+  .th-resize:hover { background: var(--accent); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  .color-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; margin-right: 4px;
+  }
+  .section-header {
+    font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .section-sub { font-size: 12px; color: var(--text2); margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="logo">Q<span>Grid</span></div>
+    <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+    <button class="tab-btn active" onclick="switchTab('data')" id="tab-data">📊 Data</button>
+    <button class="tab-btn" onclick="switchTab('automations')" id="tab-auto">⚡ Automations</button>
+    <button class="tab-btn" onclick="switchTab('alerts')" id="tab-alerts">🔔 Alerts <span id="alert-badge" style="background:var(--accent2);color:white;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px;display:none">0</span></button>
+    <button class="tab-btn" onclick="switchTab('files')" id="tab-files">📁 Files</button>
+    <div class="spacer"></div>
+    <button class="icon-btn" onclick="exportData()">⬇ Export CSV</button>
+    <button class="icon-btn" onclick="importCSV()">⬆ Import CSV</button>
+    <button class="icon-btn" onclick="showAddColumnPanel()">＋ Field</button>
+    <button class="icon-btn danger" onclick="deleteSelectedRows()">✕ Delete Selected</button>
+  </div>
+
+  <div id="main">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 14px 6px">
+        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:700">Workspaces</span>
+      </div>
+      <div id="workspace-list" style="flex:1;overflow-y:auto"></div>
+      <div id="sidebar-footer">
+        <button class="add-base-btn" onclick="addWorkspace()">＋ New Workspace</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content">
+
+      <!-- DATA TAB -->
+      <div id="data-tab">
+        <div id="table-header">
+          <div style="display:flex;align-items:center;gap:6px;margin-right:6px">
+            <span id="ws-breadcrumb" style="font-size:12px;color:var(--text3);font-weight:600;cursor:pointer" onclick="focusSidebar()"></span>
+            <span style="color:var(--text3);font-size:12px">/</span>
+            <input class="table-title-input" id="base-name-input" value="" onchange="renameCurrentTable(this.value)">
+          </div>
+          <div style="width:1px;height:20px;background:var(--border)"></div>
+          <div class="view-tabs">
+            <button class="view-tab active" id="vt-grid" onclick="switchView('grid')">▦ Grid</button>
+            <button class="view-tab" id="vt-kanban" onclick="switchView('kanban')">⋮⋮ Kanban</button>
+            <button class="view-tab" id="vt-gallery" onclick="switchView('gallery')">⊞ Gallery</button>
+          </div>
+          <div class="spacer"></div>
+          <input class="search-input" id="search-input" placeholder="🔍 Search..." oninput="filterRows()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
+          <button class="icon-btn" onclick="addRow()" style="background:rgba(95,185,233,0.15);border-color:var(--accent);color:var(--accent)">＋ Add Row</button>
+        </div>
+
+        <!-- GRID -->
+        <div id="grid-container" style="flex:1;overflow:auto;display:flex;flex-direction:column">
+          <table id="grid-table">
+            <thead><tr id="grid-head"></tr></thead>
+            <tbody id="grid-body"></tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow()">＋ Add Row</button>
+        </div>
+
+        <!-- KANBAN -->
+        <div id="kanban-container" style="display:none"></div>
+
+        <!-- GALLERY -->
+        <div id="gallery-container" style="display:none"></div>
+      </div>
+
+      <!-- AUTOMATIONS TAB -->
+      <div id="automations-tab" style="display:none;flex:1;overflow:hidden;display:none;flex-direction:column">
+        <div id="automations-view">
+          <div class="section-header">Automations</div>
+          <div class="section-sub">Automate repetitive tasks and workflows</div>
+          <button class="btn-primary" onclick="showAddAutoPanel()" style="margin-bottom:20px">＋ New Automation</button>
+          <div id="auto-list"></div>
+        </div>
+      </div>
+
+      <!-- ALERTS TAB -->
+      <div id="alerts-tab" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div id="alerts-view">
+          <div class="section-header">Alert Rules</div>
+          <div class="section-sub">Get notified when your data meets certain conditions</div>
+          <button class="btn-primary" onclick="showAddAlertPanel()" style="margin-bottom:20px">＋ New Alert Rule</button>
+          <div id="alert-rules-list"></div>
+          <div style="margin-top:28px">
+            <div class="section-header" style="font-size:16px">Alert Log</div>
+            <div id="alert-log-list" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILES TAB -->
+      <div id="files-tab" style="display:none;flex:1;flex-direction:column">
+        <div style="padding:24px;overflow-y:auto;flex:1">
+          <div class="section-header">File Storage</div>
+          <div class="section-sub">Upload and manage files attached to your base</div>
+          <div style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:40px;text-align:center;margin-bottom:24px;transition:border-color 0.15s;cursor:pointer" id="drop-zone" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFileDrop(event)">
+            <div style="font-size:36px;margin-bottom:12px">📂</div>
+            <div style="color:var(--text2);margin-bottom:10px">Drag & drop files here</div>
+            <label class="btn-primary" style="cursor:pointer;display:inline-block">
+              Browse Files
+              <input type="file" multiple style="display:none" onchange="handleFileSelect(event)">
+            </label>
+          </div>
+          <div id="files-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
+        </div>
+      </div>
+
+      <!-- STATS BAR -->
+      <div id="stats-bar">
+        <div class="stat-item">Rows: <span class="stat-val" id="stat-rows">0</span></div>
+        <div class="stat-item">Fields: <span class="stat-val" id="stat-fields">0</span></div>
+        <div class="stat-item">Selected: <span class="stat-val" id="stat-selected">0</span></div>
+        <div class="spacer" style="flex:1"></div>
+        <div style="color:var(--text3)">QGrid by Qwasar · Auto-saved</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW DETAIL PANEL -->
+<div id="row-panel">
+  <div class="row-panel-header">
+    <div class="row-panel-title">Row Details</div>
+    <button class="icon-btn" onclick="closeRowPanel()">✕</button>
+  </div>
+  <div id="row-panel-fields"></div>
+  <div style="margin-top:20px;display:flex;gap:10px">
+    <button class="btn-primary" onclick="saveRowPanel()">Save Changes</button>
+    <button class="btn-danger" onclick="deleteOpenRow()">Delete Row</button>
+  </div>
+</div>
+
+<!-- PANELS (modals) -->
+<div id="panel-overlay" style="display:none"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let state = {
+  workspaces: [],          // [ { id, name, color, emoji, tables: [ {id,name,columns,rows} ] } ]
+  currentWorkspaceId: null,
+  currentTableId: null,
+  currentView: 'grid',
+  currentTab: 'data',
+  selectedRows: new Set(),
+  openRowId: null,
+  alertLog: [],
+  automations: [],
+  alertRules: [],
+  files: {}
+};
+
+const COLORS = ['#5fb9e9','#fcd900','#6affcb','#ffb347','#ff6a9b','#a78bfa'];
+const WS_COLORS = ['#0b2243','#163a6b','#1e4a80','#0d2d56','#112f5a','#0a1f38'];
+const FIELD_TYPES = ['text','number','select','multiselect','checkbox','date','url','email','formula','file','rating'];
+
+// ─────────────────────────────────────────────
+//  PERSISTENCE
+// ─────────────────────────────────────────────
+function save() {
+  const toSave = {
+    workspaces: state.workspaces,
+    currentWorkspaceId: state.currentWorkspaceId,
+    currentTableId: state.currentTableId,
+    alertLog: state.alertLog.slice(0, 100),
+    automations: state.automations,
+    alertRules: state.alertRules,
+    files: state.files
+  };
+  localStorage.setItem('qgrid_v2', JSON.stringify(toSave));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('qgrid_v2');
+    if (raw) {
+      const d = JSON.parse(raw);
+      state.workspaces        = d.workspaces        || [];
+      state.currentWorkspaceId= d.currentWorkspaceId|| null;
+      state.currentTableId    = d.currentTableId    || null;
+      state.alertLog          = d.alertLog          || [];
+      state.automations       = d.automations       || [];
+      state.alertRules        = d.alertRules        || [];
+      state.files             = d.files             || {};
+    }
+  } catch(e) {}
+  if (!state.workspaces.length) createDefaultWorkspace();
+  if (!state.currentWorkspaceId) state.currentWorkspaceId = state.workspaces[0].id;
+  const ws = currentWorkspace();
+  if (ws && (!state.currentTableId || !ws.tables.find(t => t.id === state.currentTableId))) {
+    state.currentTableId = ws.tables[0]?.id || null;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  WORKSPACE + TABLE HELPERS
+// ─────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+function currentWorkspace() { return state.workspaces.find(w => w.id === state.currentWorkspaceId); }
+function currentBase()      { return currentWorkspace()?.tables.find(t => t.id === state.currentTableId); }
+
+// ─────────────────────────────────────────────
+//  DEFAULT WORKSPACE + TABLE
+// ─────────────────────────────────────────────
+function createDefaultWorkspace() {
+  const ws = {
+    id: uid(), name: 'My Workspace', color: WS_COLORS[0], emoji: '🏢',
+    tables: []
+  };
+  ws.tables.push(createDefaultTable('Project Tracker'));
+  ws.tables.push(createDefaultTable('Team Directory'));
+  state.workspaces.push(ws);
+  state.currentWorkspaceId = ws.id;
+  state.currentTableId = ws.tables[0].id;
+}
+
+function createDefaultTable(name) {
+  const table = {
+    id: uid(), name,
+    columns: [
+      { id: uid(), name: 'Name',     type: 'text',     width: 200 },
+      { id: uid(), name: 'Status',   type: 'select',   options: ['Todo','In Progress','Done','Blocked'], width: 140 },
+      { id: uid(), name: 'Priority', type: 'select',   options: ['Low','Medium','High'], width: 120 },
+      { id: uid(), name: 'Due Date', type: 'date',     width: 140 },
+      { id: uid(), name: 'Done',     type: 'checkbox', width: 80 },
+      { id: uid(), name: 'Notes',    type: 'text',     width: 250 }
+    ],
+    rows: []
+  };
+  const [c0,c1,c2,c3,c4,c5] = table.columns.map(c=>c.id);
+  table.rows = [
+    { id: uid(), cells: {[c0]:'Design landing page',   [c1]:'In Progress',[c2]:'High',  [c3]:'2026-03-10',[c4]:false,[c5]:'Needs brand review'} },
+    { id: uid(), cells: {[c0]:'Set up CI/CD pipeline', [c1]:'Todo',       [c2]:'Medium',[c3]:'2026-03-20',[c4]:false,[c5]:''} },
+  ];
+  return table;
+}
+
+// ─────────────────────────────────────────────
+//  WORKSPACE MANAGEMENT
+// ─────────────────────────────────────────────
+function addWorkspace() {
+  showPanel(`
+    <div class="panel-title">New Workspace</div>
+    <div class="field-row">
+      <label class="field-label">Workspace Name</label>
+      <input class="field-input" id="ws-name-input" placeholder="e.g. Marketing, Engineering…" autofocus>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Emoji Icon</label>
+      <input class="field-input" id="ws-emoji-input" placeholder="🏢" maxlength="2" value="🏢">
+    </div>
+    <div class="panel-actions">
+      <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddWorkspace()">Create Workspace</button>
+    </div>
+  `);
+}
+
+function confirmAddWorkspace() {
+  const name  = document.getElementById('ws-name-input').value.trim();
+  const emoji = document.getElementById('ws-emoji-input').value.trim() || '🏢';
+  if (!name) return;
+  const ws = {
+    id: uid(), name, emoji,
+    color: WS_COLORS[state.workspaces.length % WS_COLORS.length],
+    tables: [ createDefaultTable('Table 1') ]
+  };
+  state.workspaces.push(ws);
+  state.currentWorkspaceId = ws.id;
+  state.currentTableId = ws.tables[0].id;
+  save(); render(); closePanel();
+}
+
+function selectWorkspace(id) {
+  state.currentWorkspaceId = id;
+  const ws = currentWorkspace();
+  state.currentTableId = ws?.tables[0]?.id || null;
+  state.selectedRows.clear();
+  state._triggeredAlerts = new Set();
+  save(); render();
+}
+
+function renameWorkspace(id) {
+  const ws = state.workspaces.find(w => w.id === id);
+  if (!ws) return;
+  const name = prompt('Rename workspace:', ws.name);
+  if (name) { ws.name = name; save(); renderSidebar(); }
+}
+
+function deleteWorkspace(id) {
+  if (state.workspaces.length <= 1) { alert("Can't delete the only workspace."); return; }
+  if (!confirm('Delete this workspace and ALL its tables?')) return;
+  state.workspaces = state.workspaces.filter(w => w.id !== id);
+  if (state.currentWorkspaceId === id) {
+    state.currentWorkspaceId = state.workspaces[0].id;
+    state.currentTableId = state.workspaces[0].tables[0]?.id || null;
+  }
+  save(); render();
+}
+
+// ─────────────────────────────────────────────
+//  TABLE MANAGEMENT
+// ─────────────────────────────────────────────
+function addTable() {
+  const ws = currentWorkspace(); if (!ws) return;
+  showPanel(`
+    <div class="panel-title">New Table</div>
+    <div class="field-row">
+      <label class="field-label">Table Name</label>
+      <input class="field-input" id="tbl-name-input" placeholder="e.g. Tasks, Contacts…" autofocus>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddTable()">Create Table</button>
+    </div>
+  `);
+}
+
+function confirmAddTable() {
+  const name = document.getElementById('tbl-name-input').value.trim();
+  if (!name) return;
+  const ws = currentWorkspace(); if (!ws) return;
+  const table = {
+    id: uid(), name,
+    columns: [
+      { id: uid(), name: 'Name',  type: 'text', width: 200 },
+      { id: uid(), name: 'Notes', type: 'text', width: 300 }
+    ],
+    rows: [{ id: uid(), cells: {} }]
+  };
+  ws.tables.push(table);
+  state.currentTableId = table.id;
+  save(); render(); closePanel();
+}
+
+function selectTable(tableId) {
+  state.currentTableId = tableId;
+  state.selectedRows.clear();
+  save(); render();
+}
+
+function renameCurrentTable(val) {
+  const t = currentBase(); if (!t) return;
+  t.name = val; save(); renderSidebar();
+}
+
+function renameTable(tableId) {
+  const ws = currentWorkspace(); if (!ws) return;
+  const t = ws.tables.find(x => x.id === tableId);
+  if (!t) return;
+  const name = prompt('Rename table:', t.name);
+  if (name) { t.name = name; save(); render(); }
+}
+
+function deleteTable(tableId) {
+  const ws = currentWorkspace(); if (!ws) return;
+  if (ws.tables.length <= 1) { alert("A workspace needs at least one table."); return; }
+  if (!confirm('Delete this table and all its data?')) return;
+  ws.tables = ws.tables.filter(t => t.id !== tableId);
+  if (state.currentTableId === tableId) state.currentTableId = ws.tables[0].id;
+  save(); render();
+}
+
+// keep old name alias for compatibility
+function renameCurrentBase(val) { renameCurrentTable(val); }
+
+// ─────────────────────────────────────────────
+//  ROW MANAGEMENT
+// ─────────────────────────────────────────────
+function addRow() {
+  const b = currentBase(); if (!b) return;
+  const row = { id: uid(), cells: {} };
+  b.rows.push(row);
+  runAlertRules(); save(); renderGrid(); updateStats();
+}
+
+function deleteRow(rowId) {
+  const b = currentBase(); if (!b) return;
+  b.rows = b.rows.filter(r => r.id !== rowId);
+  state.selectedRows.delete(rowId);
+  save(); renderGrid(); updateStats();
+}
+
+function deleteSelectedRows() {
+  if (!state.selectedRows.size) return;
+  if (!confirm(`Delete ${state.selectedRows.size} row(s)?`)) return;
+  const b = currentBase(); if (!b) return;
+  b.rows = b.rows.filter(r => !state.selectedRows.has(r.id));
+  state.selectedRows.clear();
+  save(); renderGrid(); updateStats();
+}
+
+function setCellValue(rowId, colId, val) {
+  const b = currentBase(); if (!b) return;
+  const row = b.rows.find(r => r.id === rowId); if (!row) return;
+  row.cells[colId] = val;
+  runAlertRules(); save();
+  updateStats();
+}
+
+// ─────────────────────────────────────────────
+//  COLUMN MANAGEMENT
+// ─────────────────────────────────────────────
+function addColumn(name, type, options=[]) {
+  const b = currentBase(); if (!b) return;
+  b.columns.push({ id: uid(), name, type, options, width: 160 });
+  save(); renderGrid();
+}
+
+function deleteColumn(colId) {
+  const b = currentBase(); if (!b) return;
+  b.columns = b.columns.filter(c => c.id !== colId);
+  b.rows.forEach(r => delete r.cells[colId]);
+  save(); renderGrid();
+}
+
+// ─────────────────────────────────────────────
+//  FORMULA EVALUATION
+// ─────────────────────────────────────────────
+function evalFormula(formula, row, columns) {
+  try {
+    let expr = formula.replace(/\[([^\]]+)\]/g, (_, name) => {
+      const col = columns.find(c => c.name === name);
+      if (!col) return 0;
+      return JSON.stringify(row.cells[col.id] || '');
+    });
+    // Safe eval subset
+    const val = Function('"use strict";return (' + expr + ')')();
+    return val;
+  } catch(e) { return '#ERR'; }
+}
+
+// ─────────────────────────────────────────────
+//  RENDER GRID
+// ─────────────────────────────────────────────
+function renderGrid() {
+  const b = currentBase();
+  const search = (document.getElementById('search-input')||{}).value?.toLowerCase() || '';
+  const head = document.getElementById('grid-head');
+  const body = document.getElementById('grid-body');
+  if (!b) { head.innerHTML=''; body.innerHTML=''; return; }
+
+  // HEAD
+  head.innerHTML = '';
+  const thNum = document.createElement('th');
+  thNum.className = 'th-row-num';
+  thNum.innerHTML = '<div class="th-inner"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="accent-color:var(--accent)"></div>';
+  head.appendChild(thNum);
+
+  b.columns.forEach(col => {
+    const th = document.createElement('th');
+    th.style.width = (col.width || 160) + 'px';
+    th.style.minWidth = (col.width || 160) + 'px';
+    th.style.position = 'relative';
+    th.innerHTML = `
+      <div class="th-inner" ondblclick="renameColumn('${col.id}')">
+        <span class="th-type">${typeIcon(col.type)}</span>
+        <span>${col.name}</span>
+        <span class="th-sort" onclick="sortBy('${col.id}')">↕</span>
+      </div>
+      <div class="th-resize" onmousedown="startResize(event,'${col.id}')"></div>
+    `;
+    th.addEventListener('contextmenu', e => { e.preventDefault(); colContextMenu(e, col.id); });
+    head.appendChild(th);
+  });
+
+  const thAdd = document.createElement('th');
+  thAdd.className = 'th-add';
+  thAdd.innerHTML = '＋';
+  thAdd.onclick = showAddColumnPanel;
+  head.appendChild(thAdd);
+
+  // BODY
+  body.innerHTML = '';
+  let rows = b.rows;
+  if (search) {
+    rows = rows.filter(row => {
+      return Object.values(row.cells).some(v =>
+        String(v).toLowerCase().includes(search)
+      );
+    });
+  }
+
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    if (state.selectedRows.has(row.id)) tr.classList.add('selected');
+
+    const tdNum = document.createElement('td');
+    tdNum.className = 'td-row-num';
+    tdNum.innerHTML = `<input type="checkbox" ${state.selectedRows.has(row.id)?'checked':''} onchange="toggleRowSelect('${row.id}',this.checked)" style="accent-color:var(--accent);display:block;margin:0 auto 4px"><span style="cursor:pointer;font-size:11px" onclick="openRowPanel('${row.id}')">${i+1}</span>`;
+    tr.appendChild(tdNum);
+
+    b.columns.forEach(col => {
+      const td = document.createElement('td');
+      const val = row.cells[col.id];
+
+      if (col.type === 'checkbox') {
+        td.innerHTML = `<div class="cell-checkbox"><input type="checkbox" ${val?'checked':''} onchange="setCellValue('${row.id}','${col.id}',this.checked)"></div>`;
+      } else if (col.type === 'select') {
+        const opts = (col.options||[]).map(o =>
+          `<option ${val===o?'selected':''}>${o}</option>`
+        ).join('');
+        td.innerHTML = `<select class="cell-select" onchange="setCellValue('${row.id}','${col.id}',this.value)"><option value=""></option>${opts}</select>`;
+      } else if (col.type === 'multiselect') {
+        const tags = val ? String(val).split(',').filter(Boolean) : [];
+        const tagColors = {'In Progress':'','Done':'green','Blocked':'red','High':'red','Medium':'yellow','Low':'green'};
+        td.innerHTML = `<div class="tag-cell">${tags.map(t=>`<span class="tag ${tagColors[t]||''}">${t}</span>`).join('')}
+          <input style="background:none;border:none;outline:none;color:var(--text);font-family:var(--font-mono);font-size:12px;width:80px" placeholder="add..." value="" onblur="addMultiTag('${row.id}','${col.id}',this)"></div>`;
+      } else if (col.type === 'date') {
+        td.innerHTML = `<input type="date" class="cell-input" value="${val||''}" onchange="setCellValue('${row.id}','${col.id}',this.value)">`;
+      } else if (col.type === 'rating') {
+        const r = parseInt(val)||0;
+        td.innerHTML = `<div style="padding:6px 8px;display:flex;gap:2px">${[1,2,3,4,5].map(n=>`<span onclick="setCellValue('${row.id}','${col.id}',${n})" style="cursor:pointer;font-size:16px;color:${n<=r?'#ffb347':'var(--surface3)'};transition:color 0.1s">★</span>`).join('')}</div>`;
+      } else if (col.type === 'formula') {
+        const res = evalFormula(col.formula||'', row, b.columns);
+        td.innerHTML = `<div style="padding:9px 12px"><span class="formula-badge">${res}</span></div>`;
+      } else if (col.type === 'file') {
+        const files = val ? JSON.parse(val) : [];
+        td.innerHTML = `<div class="file-cell">${files.map(f=>`<span class="file-chip" title="${f.name}" onclick="downloadFile('${f.id}')">${f.name}</span>`).join('')}
+          <label class="file-upload-btn">＋<input type="file" style="display:none" onchange="attachFile('${row.id}','${col.id}',this)"></label></div>`;
+      } else if (col.type === 'url') {
+        td.innerHTML = `<input class="cell-input" type="url" value="${escHtml(val||'')}" placeholder="https://…" oninput="setCellValue('${row.id}','${col.id}',this.value)" onblur="setCellValue('${row.id}','${col.id}',this.value)">`;
+      } else if (col.type === 'email') {
+        td.innerHTML = `<input class="cell-input" type="email" value="${escHtml(val||'')}" placeholder="email@…" oninput="setCellValue('${row.id}','${col.id}',this.value)">`;
+      } else if (col.type === 'number') {
+        td.innerHTML = `<input class="cell-input" type="number" value="${val||''}" oninput="setCellValue('${row.id}','${col.id}',parseFloat(this.value)||0)">`;
+      } else {
+        td.innerHTML = `<textarea class="cell-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';setCellValue('${row.id}','${col.id}',this.value)">${escHtml(val||'')}</textarea>`;
+      }
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+  updateStats();
+}
+
+function typeIcon(type) {
+  const map = {text:'T',number:'#',select:'◉',multiselect:'⊕',checkbox:'☑',date:'📅',url:'🔗',email:'✉',formula:'∑',file:'📎',rating:'★'};
+  return map[type]||'T';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────
+//  SELECTION
+// ─────────────────────────────────────────────
+function toggleSelectAll(checked) {
+  const b = currentBase(); if (!b) return;
+  state.selectedRows.clear();
+  if (checked) b.rows.forEach(r => state.selectedRows.add(r.id));
+  renderGrid();
+}
+function toggleRowSelect(rowId, checked) {
+  if (checked) state.selectedRows.add(rowId);
+  else state.selectedRows.delete(rowId);
+  updateStats();
+}
+
+// ─────────────────────────────────────────────
+//  SORT / FILTER
+// ─────────────────────────────────────────────
+let sortState = { colId: null, dir: 1 };
+function sortBy(colId) {
+  if (sortState.colId === colId) sortState.dir *= -1;
+  else { sortState.colId = colId; sortState.dir = 1; }
+  const b = currentBase(); if (!b) return;
+  b.rows.sort((a,b2) => {
+    const av = a.cells[colId]||'', bv = b2.cells[colId]||'';
+    return String(av).localeCompare(String(bv), undefined, {numeric:true}) * sortState.dir;
+  });
+  renderGrid();
+}
+
+function filterRows() { renderGrid(); }
+
+// ─────────────────────────────────────────────
+//  COLUMN RESIZE
+// ─────────────────────────────────────────────
+let resizing = null;
+function startResize(e, colId) {
+  e.preventDefault();
+  resizing = { colId, startX: e.clientX };
+  const b = currentBase();
+  resizing.startW = b.columns.find(c => c.id === colId)?.width || 160;
+  document.onmousemove = e2 => {
+    const b2 = currentBase(); if (!b2) return;
+    const col = b2.columns.find(c => c.id === resizing.colId);
+    if (col) { col.width = Math.max(80, resizing.startW + e2.clientX - resizing.startX); renderGrid(); }
+  };
+  document.onmouseup = () => { resizing = null; document.onmousemove = null; document.onmouseup = null; save(); };
+}
+
+// ─────────────────────────────────────────────
+//  KANBAN VIEW
+// ─────────────────────────────────────────────
+function renderKanban() {
+  const b = currentBase();
+  const container = document.getElementById('kanban-container');
+  if (!b) { container.innerHTML=''; return; }
+
+  const selectCol = b.columns.find(c => c.type === 'select');
+  if (!selectCol) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⋮⋮</div><div class="empty-state-text">Add a "select" field to use Kanban view</div></div>';
+    return;
+  }
+
+  const groups = {};
+  const opts = ['', ...(selectCol.options||[])];
+  opts.forEach(o => groups[o] = []);
+  b.rows.forEach(row => {
+    const v = row.cells[selectCol.id] || '';
+    if (groups[v] !== undefined) groups[v].push(row);
+    else groups[''].push(row);
+  });
+
+  container.innerHTML = '';
+  opts.forEach(opt => {
+    const rows = groups[opt] || [];
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+    col.innerHTML = `<div class="kanban-col-header"><div class="kanban-col-title">${opt||'No Status'}</div><span class="kanban-count">${rows.length}</span></div>
+      <div class="kanban-cards">${rows.map(row => {
+        const nameCol = b.columns.find(c => c.type==='text');
+        const title = nameCol ? (row.cells[nameCol.id]||'Untitled') : 'Row';
+        const tags = b.columns.filter(c=>c.type==='select'&&c.id!==selectCol.id).map(c=>{
+          const v=row.cells[c.id]; return v?`<span class="tag">${v}</span>`:'';
+        }).join('');
+        return `<div class="kanban-card" onclick="openRowPanel('${row.id}')">
+          <div class="kanban-card-title">${escHtml(title)}</div>
+          <div class="kanban-card-meta">${tags}</div>
+        </div>`;
+      }).join('')}</div>`;
+    container.appendChild(col);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  GALLERY VIEW
+// ─────────────────────────────────────────────
+function renderGallery() {
+  const b = currentBase();
+  const container = document.getElementById('gallery-container');
+  if (!b) { container.innerHTML=''; return; }
+  const nameCol = b.columns.find(c => c.type==='text');
+  const emojis = ['📋','📌','📎','🗂️','📄','📃'];
+  container.innerHTML = b.rows.map((row,i) => {
+    const title = nameCol ? (row.cells[nameCol.id]||'Untitled') : 'Row '+(i+1);
+    const fields = b.columns.slice(1,4).map(col => {
+      const v = row.cells[col.id];
+      return v ? `<div style="font-size:11px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3)">${col.name}:</span> ${escHtml(String(v))}</div>` : '';
+    }).join('');
+    return `<div class="gallery-card" onclick="openRowPanel('${row.id}')">
+      <div class="gallery-card-img">${emojis[i%emojis.length]}</div>
+      <div class="gallery-card-body">
+        <div class="gallery-card-title">${escHtml(title)}</div>
+        ${fields}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  VIEWS
+// ─────────────────────────────────────────────
+function switchView(view) {
+  state.currentView = view;
+  ['grid','kanban','gallery'].forEach(v => {
+    document.getElementById(v+'-container').style.display = v===view ? (v==='grid'?'flex':'flex') : 'none';
+    document.getElementById('vt-'+v).classList.toggle('active', v===view);
+  });
+  if (view==='kanban') renderKanban();
+  else if (view==='gallery') renderGallery();
+  else renderGrid();
+}
+
+// ─────────────────────────────────────────────
+//  ROW DETAIL PANEL
+// ─────────────────────────────────────────────
+function openRowPanel(rowId) {
+  const b = currentBase();
+  const row = b.rows.find(r => r.id === rowId);
+  if (!row) return;
+  state.openRowId = rowId;
+  const pf = document.getElementById('row-panel-fields');
+  pf.innerHTML = b.columns.map(col => {
+    const val = row.cells[col.id] || '';
+    let input;
+    if (col.type === 'checkbox') {
+      input = `<input type="checkbox" ${val?'checked':''} style="width:16px;height:16px;accent-color:var(--accent)">`;
+    } else if (col.type === 'select') {
+      const opts = (col.options||[]).map(o=>`<option ${val===o?'selected':''}>${o}</option>`).join('');
+      input = `<select class="row-field-edit"><option></option>${opts}</select>`;
+    } else if (col.type === 'date') {
+      input = `<input type="date" class="row-field-edit" value="${val}">`;
+    } else if (col.type === 'rating') {
+      const r = parseInt(val)||0;
+      input = `<div style="display:flex;gap:4px">${[1,2,3,4,5].map(n=>`<span style="font-size:22px;cursor:pointer;color:${n<=r?'#ffb347':'var(--surface3)'}">★</span>`).join('')}</div>`;
+    } else if (col.type === 'formula') {
+      const res = evalFormula(col.formula||'', row, b.columns);
+      input = `<div class="row-field-value"><span class="formula-badge">${res}</span></div>`;
+    } else {
+      input = `<textarea class="row-field-edit" rows="${col.type==='text'?3:1}">${escHtml(String(val))}</textarea>`;
+    }
+    return `<div class="row-field" data-col="${col.id}">
+      <div class="row-field-label">${typeIcon(col.type)} ${col.name}</div>
+      ${input}
+    </div>`;
+  }).join('');
+  document.getElementById('row-panel').classList.add('open');
+}
+
+function closeRowPanel() {
+  document.getElementById('row-panel').classList.remove('open');
+  state.openRowId = null;
+}
+
+function saveRowPanel() {
+  const b = currentBase();
+  const row = b.rows.find(r => r.id === state.openRowId);
+  if (!row) return;
+  document.querySelectorAll('#row-panel-fields .row-field').forEach(div => {
+    const colId = div.dataset.col;
+    const col = b.columns.find(c => c.id === colId);
+    if (!col || col.type === 'formula') return;
+    let input = div.querySelector('input,select,textarea');
+    if (!input) return;
+    if (col.type === 'checkbox') row.cells[colId] = input.checked;
+    else if (col.type === 'number') row.cells[colId] = parseFloat(input.value)||0;
+    else row.cells[colId] = input.value;
+  });
+  runAlertRules(); save(); renderGrid();
+  if (state.currentView==='kanban') renderKanban();
+  if (state.currentView==='gallery') renderGallery();
+}
+
+function deleteOpenRow() {
+  if (!state.openRowId) return;
+  if (!confirm('Delete this row?')) return;
+  deleteRow(state.openRowId);
+  closeRowPanel();
+}
+
+// ─────────────────────────────────────────────
+//  ADD COLUMN PANEL
+// ─────────────────────────────────────────────
+function showAddColumnPanel() {
+  showPanel(`
+    <div class="panel-title">Add Field</div>
+    <div class="field-row">
+      <label class="field-label">Field Name</label>
+      <input class="field-input" id="col-name" placeholder="Field name…" autofocus>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Field Type</label>
+      <select class="field-select" id="col-type" onchange="toggleColOptions()">
+        ${FIELD_TYPES.map(t=>`<option value="${t}">${typeIcon(t)} ${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="col-options-wrap" style="display:none">
+      <div class="field-row">
+        <label class="field-label">Options (comma separated)</label>
+        <input class="field-input" id="col-options" placeholder="Option1, Option2, Option3">
+      </div>
+    </div>
+    <div id="col-formula-wrap" style="display:none">
+      <div class="field-row">
+        <label class="field-label">Formula (use [FieldName] for references)</label>
+        <input class="field-input" id="col-formula" placeholder="[Price] * [Quantity]">
+      </div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddColumn()">Add Field</button>
+    </div>
+  `);
+}
+
+function toggleColOptions() {
+  const type = document.getElementById('col-type').value;
+  document.getElementById('col-options-wrap').style.display =
+    ['select','multiselect'].includes(type) ? 'block' : 'none';
+  document.getElementById('col-formula-wrap').style.display =
+    type === 'formula' ? 'block' : 'none';
+}
+
+function confirmAddColumn() {
+  const name = document.getElementById('col-name').value.trim();
+  const type = document.getElementById('col-type').value;
+  if (!name) return;
+  const optsEl = document.getElementById('col-options');
+  const options = optsEl ? optsEl.value.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const formulaEl = document.getElementById('col-formula');
+  const formula = formulaEl ? formulaEl.value.trim() : '';
+  const b = currentBase();
+  b.columns.push({ id: uid(), name, type, options, formula, width: 160 });
+  save(); renderGrid(); closePanel();
+}
+
+function renameColumn(colId) {
+  const b = currentBase();
+  const col = b.columns.find(c => c.id === colId);
+  const name = prompt('Rename field:', col.name);
+  if (name) { col.name = name; save(); renderGrid(); }
+}
+
+function colContextMenu(e, colId) {
+  const existing = document.getElementById('col-ctx-menu');
+  if (existing) existing.remove();
+  const menu = document.createElement('div');
+  menu.id = 'col-ctx-menu';
+  menu.style.cssText = `position:fixed;top:${e.clientY}px;left:${e.clientX}px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;z-index:999;min-width:160px`;
+  menu.innerHTML = `
+    <div onclick="renameColumn('${colId}');document.getElementById('col-ctx-menu').remove()" style="padding:8px 12px;cursor:pointer;border-radius:4px;color:var(--text2);font-size:13px;transition:background 0.1s" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='none'">✏️ Rename</div>
+    <div onclick="deleteColumn('${colId}');document.getElementById('col-ctx-menu').remove()" style="padding:8px 12px;cursor:pointer;border-radius:4px;color:var(--danger);font-size:13px;transition:background 0.1s" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='none'">🗑 Delete</div>
+  `;
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), {once:true}), 100);
+}
+
+// ─────────────────────────────────────────────
+//  MULTISELECT
+// ─────────────────────────────────────────────
+function addMultiTag(rowId, colId, input) {
+  const val = input.value.trim(); if (!val) return;
+  const b = currentBase();
+  const row = b.rows.find(r => r.id === rowId);
+  const existing = row.cells[colId] ? String(row.cells[colId]).split(',').filter(Boolean) : [];
+  if (!existing.includes(val)) existing.push(val);
+  row.cells[colId] = existing.join(',');
+  save(); renderGrid();
+}
+
+// ─────────────────────────────────────────────
+//  ALERT RULES
+// ─────────────────────────────────────────────
+function showAddAlertPanel() {
+  const b = currentBase();
+  if (!b) return;
+  const colOpts = b.columns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  showPanel(`
+    <div class="panel-title">New Alert Rule</div>
+    <div class="field-row">
+      <label class="field-label">Alert Name</label>
+      <input class="field-input" id="alert-name" placeholder="e.g. Overdue tasks">
+    </div>
+    <div class="field-row">
+      <label class="field-label">Watch Field</label>
+      <select class="field-select" id="alert-col">${colOpts}</select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Condition</label>
+      <select class="field-select" id="alert-cond">
+        <option value="equals">equals</option>
+        <option value="not_equals">does not equal</option>
+        <option value="contains">contains</option>
+        <option value="greater_than">greater than</option>
+        <option value="less_than">less than</option>
+        <option value="is_empty">is empty</option>
+        <option value="is_not_empty">is not empty</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Value</label>
+      <input class="field-input" id="alert-value" placeholder="e.g. Blocked">
+    </div>
+    <div class="field-row">
+      <label class="field-label">Notification</label>
+      <select class="field-select" id="alert-notif">
+        <option value="in-app">In-App Notification</option>
+        <option value="browser">Browser Notification</option>
+      </select>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddAlert()">Add Rule</button>
+    </div>
+  `);
+}
+
+function confirmAddAlert() {
+  const rule = {
+    id: uid(),
+    name: document.getElementById('alert-name').value,
+    colId: document.getElementById('alert-col').value,
+    condition: document.getElementById('alert-cond').value,
+    value: document.getElementById('alert-value').value,
+    notif: document.getElementById('alert-notif').value,
+    enabled: true,
+    baseId: state.currentTableId
+  };
+  state.alertRules.push(rule);
+  save(); renderAlerts(); closePanel();
+}
+
+function runAlertRules() {
+  const b = currentBase(); if (!b) return;
+  state.alertRules.filter(r => r.enabled && r.baseId === state.currentTableId).forEach(rule => {
+    b.rows.forEach(row => {
+      const val = String(row.cells[rule.colId] || '');
+      let triggered = false;
+      switch(rule.condition) {
+        case 'equals': triggered = val === rule.value; break;
+        case 'not_equals': triggered = val !== rule.value; break;
+        case 'contains': triggered = val.includes(rule.value); break;
+        case 'greater_than': triggered = parseFloat(val) > parseFloat(rule.value); break;
+        case 'less_than': triggered = parseFloat(val) < parseFloat(rule.value); break;
+        case 'is_empty': triggered = !val; break;
+        case 'is_not_empty': triggered = !!val; break;
+      }
+      if (triggered) {
+        const logKey = rule.id + '|' + row.id;
+        if (!state._triggeredAlerts) state._triggeredAlerts = new Set();
+        if (!state._triggeredAlerts.has(logKey)) {
+          state._triggeredAlerts.add(logKey);
+          addAlertLog(rule.name, val, rule.notif);
+        }
+      }
+    });
+  });
+}
+
+function addAlertLog(ruleName, val, notif) {
+  const entry = {
+    id: uid(), rule: ruleName, val, ts: new Date().toLocaleTimeString(),
+    type: notif === 'browser' ? 'warn' : 'info'
+  };
+  state.alertLog.unshift(entry);
+  if (state.alertLog.length > 50) state.alertLog.pop();
+  updateAlertBadge();
+  if (notif === 'browser' && Notification.permission === 'granted') {
+    new Notification('QGrid Alert: ' + ruleName, { body: 'Value: ' + val });
+  } else if (notif === 'browser') {
+    Notification.requestPermission();
+  }
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const list = document.getElementById('alert-rules-list');
+  const log = document.getElementById('alert-log-list');
+  if (!list) return;
+  list.innerHTML = state.alertRules.map(rule => `
+    <div class="auto-card">
+      <div class="auto-icon" style="background:rgba(255,107,71,0.1)">🔔</div>
+      <div class="auto-info">
+        <div class="auto-name">${rule.name}</div>
+        <div class="auto-desc">Field matches condition → ${rule.notif} notification</div>
+      </div>
+      <div class="toggle ${rule.enabled?'on':''}" onclick="toggleAlert('${rule.id}')"></div>
+      <button class="icon-btn danger" onclick="deleteAlert('${rule.id}')">✕</button>
+    </div>
+  `).join('') || '<div style="color:var(--text3);padding:20px 0">No alert rules yet</div>';
+
+  if (log) {
+    log.innerHTML = state.alertLog.slice(0,20).map(e => `
+      <div class="alert-log">
+        <div class="alert-dot ${e.type}"></div>
+        <div class="alert-log-msg"><strong>${e.rule}</strong> triggered — value: "${e.val}"</div>
+        <div class="alert-log-time">${e.ts}</div>
+      </div>
+    `).join('') || '<div style="color:var(--text3)">No alerts logged yet</div>';
+  }
+}
+
+function toggleAlert(id) {
+  const r = state.alertRules.find(a => a.id === id);
+  if (r) { r.enabled = !r.enabled; save(); renderAlerts(); }
+}
+function deleteAlert(id) {
+  state.alertRules = state.alertRules.filter(a => a.id !== id);
+  save(); renderAlerts();
+}
+
+function updateAlertBadge() {
+  const badge = document.getElementById('alert-badge');
+  if (state.alertLog.length > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = Math.min(state.alertLog.length, 99);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  AUTOMATIONS
+// ─────────────────────────────────────────────
+function showAddAutoPanel() {
+  const b = currentBase();
+  const colOpts = b ? b.columns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('') : '';
+  showPanel(`
+    <div class="panel-title">New Automation</div>
+    <div class="field-row">
+      <label class="field-label">Automation Name</label>
+      <input class="field-input" id="auto-name" placeholder="e.g. Auto-assign priority">
+    </div>
+    <div class="field-row">
+      <label class="field-label">Trigger</label>
+      <select class="field-select" id="auto-trigger">
+        <option value="row_created">When row is created</option>
+        <option value="field_changes">When field changes</option>
+        <option value="scheduled">On schedule (simulated)</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Action</label>
+      <select class="field-select" id="auto-action">
+        <option value="set_field">Set field value</option>
+        <option value="log_message">Log message</option>
+        <option value="duplicate_row">Duplicate row</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Target Field</label>
+      <select class="field-select" id="auto-col">${colOpts}</select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Value to Set</label>
+      <input class="field-input" id="auto-value" placeholder="e.g. Medium">
+    </div>
+    <div class="panel-actions">
+      <button class="btn-secondary" onclick="closePanel()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddAuto()">Add Automation</button>
+    </div>
+  `);
+}
+
+function confirmAddAuto() {
+  const auto = {
+    id: uid(),
+    name: document.getElementById('auto-name').value,
+    trigger: document.getElementById('auto-trigger').value,
+    action: document.getElementById('auto-action').value,
+    colId: document.getElementById('auto-col').value,
+    value: document.getElementById('auto-value').value,
+    enabled: true,
+    baseId: state.currentTableId,
+    runCount: 0
+  };
+  state.automations.push(auto);
+  save(); renderAutomations(); closePanel();
+}
+
+function renderAutomations() {
+  const list = document.getElementById('auto-list');
+  if (!list) return;
+  const icons = { row_created:'🟢', field_changes:'🔄', scheduled:'⏰' };
+  list.innerHTML = state.automations.map(a => `
+    <div class="auto-card">
+      <div class="auto-icon" style="background:rgba(124,106,255,0.1)">${icons[a.trigger]||'⚡'}</div>
+      <div class="auto-info">
+        <div class="auto-name">${a.name}</div>
+        <div class="auto-desc">${a.trigger.replace('_',' ')} → ${a.action.replace('_',' ')} · Ran ${a.runCount} times</div>
+      </div>
+      <div class="toggle ${a.enabled?'on':''}" onclick="toggleAuto('${a.id}')"></div>
+      <button class="icon-btn" onclick="runAuto('${a.id}')">▶ Run</button>
+      <button class="icon-btn danger" onclick="deleteAuto('${a.id}')">✕</button>
+    </div>
+  `).join('') || '<div style="color:var(--text3);padding:20px 0">No automations yet</div>';
+}
+
+function toggleAuto(id) {
+  const a = state.automations.find(x => x.id === id);
+  if (a) { a.enabled = !a.enabled; save(); renderAutomations(); }
+}
+function deleteAuto(id) {
+  state.automations = state.automations.filter(a => a.id !== id);
+  save(); renderAutomations();
+}
+function runAuto(id) {
+  const auto = state.automations.find(a => a.id === id);
+  if (!auto) return;
+  const b = state.workspaces.flatMap(w => w.tables).find(x => x.id === auto.baseId);
+  if (!b) return;
+  if (auto.action === 'set_field') {
+    b.rows.forEach(row => row.cells[auto.colId] = auto.value);
+    auto.runCount++;
+  } else if (auto.action === 'log_message') {
+    addAlertLog('Automation: ' + auto.name, 'Manual run', 'in-app');
+    auto.runCount++;
+  } else if (auto.action === 'duplicate_row' && b.rows.length) {
+    const last = b.rows[b.rows.length-1];
+    b.rows.push({ id: uid(), cells: {...last.cells} });
+    auto.runCount++;
+  }
+  save(); renderGrid(); renderAutomations();
+}
+
+// ─────────────────────────────────────────────
+//  FILE STORAGE
+// ─────────────────────────────────────────────
+function handleFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').style.borderColor = 'var(--border)';
+  [...e.dataTransfer.files].forEach(file => storeFile(file));
+}
+function handleFileSelect(e) {
+  [...e.target.files].forEach(file => storeFile(file));
+}
+function storeFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const id = uid();
+    state.files[id] = {
+      id, name: file.name, type: file.type,
+      size: file.size, data: ev.target.result,
+      ts: new Date().toLocaleDateString()
+    };
+    save(); renderFilesTab();
+  };
+  reader.readAsDataURL(file);
+}
+function attachFile(rowId, colId, input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const id = uid();
+    state.files[id] = { id, name: file.name, type: file.type, size: file.size, data: ev.target.result };
+    const b = currentBase();
+    const row = b.rows.find(r => r.id === rowId);
+    const existing = row.cells[colId] ? JSON.parse(row.cells[colId]) : [];
+    existing.push({ id, name: file.name });
+    row.cells[colId] = JSON.stringify(existing);
+    save(); renderGrid(); renderFilesTab();
+  };
+  reader.readAsDataURL(file);
+}
+function downloadFile(fileId) {
+  const f = state.files[fileId]; if (!f) return;
+  const a = document.createElement('a');
+  a.href = f.data; a.download = f.name; a.click();
+}
+function deleteFile(fileId) {
+  delete state.files[fileId];
+  save(); renderFilesTab();
+}
+function renderFilesTab() {
+  const grid = document.getElementById('files-grid');
+  if (!grid) return;
+  const files = Object.values(state.files);
+  if (!files.length) { grid.innerHTML = '<div style="color:var(--text3);grid-column:1/-1">No files uploaded yet</div>'; return; }
+  const sizeStr = s => s < 1024 ? s+'B' : s < 1048576 ? (s/1024).toFixed(1)+'KB' : (s/1048576).toFixed(1)+'MB';
+  const typeIcon = t => t.startsWith('image/')?'🖼️':t.includes('pdf')?'📄':t.includes('text')?'📃':'📎';
+  grid.innerHTML = files.map(f => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:28px;margin-bottom:8px">${typeIcon(f.type)}</div>
+      <div style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px" title="${f.name}">${f.name}</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">${sizeStr(f.size)} · ${f.ts||''}</div>
+      <div style="display:flex;gap:6px">
+        <button class="icon-btn" onclick="downloadFile('${f.id}')" style="flex:1;justify-content:center">⬇</button>
+        <button class="icon-btn danger" onclick="deleteFile('${f.id}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────
+//  EXPORT / IMPORT
+// ─────────────────────────────────────────────
+function exportData() {
+  const b = currentBase(); if (!b) return;
+  const headers = b.columns.map(c => `"${c.name}"`).join(',');
+  const rows = b.rows.map(row =>
+    b.columns.map(col => {
+      const v = row.cells[col.id] ?? '';
+      return `"${String(v).replace(/"/g,'""')}"`;
+    }).join(',')
+  );
+  const csv = [headers, ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = b.name + '.csv';
+  a.click();
+}
+
+function importCSV() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.csv';
+  input.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split('\n').filter(l => l.trim());
+      if (!lines.length) return;
+      const parse = line => line.split(',').map(v => v.trim().replace(/^"|"$/g,'').replace(/""/g,'"'));
+      const headers = parse(lines[0]);
+      const b = currentBase();
+      b.columns = headers.map(h => ({ id: uid(), name: h, type: 'text', width: 180 }));
+      b.rows = lines.slice(1).map(line => {
+        const vals = parse(line);
+        const cells = {};
+        b.columns.forEach((col,i) => cells[col.id] = vals[i]||'');
+        return { id: uid(), cells };
+      });
+      save(); render();
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ─────────────────────────────────────────────
+//  SIDEBAR
+// ─────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('workspace-list');
+  if (!list) return;
+  list.innerHTML = state.workspaces.map(ws => {
+    const isActive = ws.id === state.currentWorkspaceId;
+    const tables = (ws.tables || []).map(t => {
+      const isCurrent = t.id === state.currentTableId && isActive;
+      return `<div class="tbl-item ${isCurrent?'active':''}" onclick="selectTable('${ws.id}','${t.id}')">
+        <span class="tbl-icon">▦</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(t.name)}</span>
+        <div class="tbl-actions">
+          <span onclick="event.stopPropagation();renameTableById('${ws.id}','${t.id}')" class="ws-action-btn" title="Rename">✏️</span>
+          ${ws.tables.length > 1 ? `<span onclick="event.stopPropagation();deleteTableById('${ws.id}','${t.id}')" class="ws-action-btn" title="Delete" style="color:var(--danger)">✕</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    return `
+      <div class="ws-item ${isActive?'active':''}" onclick="selectWorkspace('${ws.id}')">
+        <span class="ws-dot" style="background:${COLORS[state.workspaces.indexOf(ws) % COLORS.length]}"></span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700">${escHtml(ws.emoji||'🏢')} ${escHtml(ws.name)}</span>
+        <div class="ws-actions">
+          <span onclick="event.stopPropagation();renameWorkspace('${ws.id}')" class="ws-action-btn" title="Rename">✏️</span>
+          ${state.workspaces.length > 1 ? `<span onclick="event.stopPropagation();deleteWorkspace('${ws.id}')" class="ws-action-btn" title="Delete workspace" style="color:var(--danger)">🗑</span>` : ''}
+        </div>
+        <span class="ws-chevron">${isActive ? '▶' : '▷'}</span>
+      </div>
+      <div class="table-items ${isActive?'expanded':''}">
+        ${tables}
+        <button class="add-table-btn" onclick="addTableToWorkspace('${ws.id}')">＋ Add table</button>
+      </div>`;
+  }).join('');
+}
+
+function selectTable(wsId, tableId) {
+  state.currentWorkspaceId = wsId;
+  state.currentTableId = tableId;
+  state.selectedRows.clear();
+  state._triggeredAlerts = new Set();
+  save(); render();
+}
+
+function addTableToWorkspace(wsId) {
+  state.currentWorkspaceId = wsId;
+  addTable();
+}
+
+function renameTableById(wsId, tableId) {
+  const ws = state.workspaces.find(w => w.id === wsId); if (!ws) return;
+  const t = ws.tables.find(x => x.id === tableId); if (!t) return;
+  const name = prompt('Rename table:', t.name);
+  if (name) { t.name = name; save(); render(); }
+}
+
+function deleteTableById(wsId, tableId) {
+  const ws = state.workspaces.find(w => w.id === wsId); if (!ws) return;
+  if (ws.tables.length <= 1) { alert("A workspace needs at least one table."); return; }
+  if (!confirm('Delete this table and all its data?')) return;
+  ws.tables = ws.tables.filter(t => t.id !== tableId);
+  if (state.currentTableId === tableId && state.currentWorkspaceId === wsId) {
+    state.currentTableId = ws.tables[0].id;
+  }
+  save(); render();
+}
+
+function focusSidebar() {
+  // visual highlight — no-op for now
+}
+
+// keep old aliases
+function selectBase(id) { selectWorkspace(id); }
+function deleteBase(id) { deleteWorkspace(id); }
+
+// ─────────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────────
+function switchTab(tab) {
+  state.currentTab = tab;
+  ['data','automations','alerts','files'].forEach(t => {
+    document.getElementById(t+'-tab').style.display = t===tab ? 'flex' : 'none';
+    document.getElementById('tab-'+t.replace('automations','auto')).classList.toggle('active', t===tab);
+  });
+  document.getElementById('tab-auto').classList.toggle('active', tab==='automations');
+  document.getElementById('tab-data').classList.toggle('active', tab==='data');
+  document.getElementById('tab-alerts').classList.toggle('active', tab==='alerts');
+  document.getElementById('tab-files').classList.toggle('active', tab==='files');
+
+  if (tab === 'automations') renderAutomations();
+  if (tab === 'alerts') renderAlerts();
+  if (tab === 'files') renderFilesTab();
+}
+
+// ─────────────────────────────────────────────
+//  STATS BAR
+// ─────────────────────────────────────────────
+function updateStats() {
+  const b = currentBase();
+  if (!b) return;
+  document.getElementById('stat-rows').textContent = b.rows.length;
+  document.getElementById('stat-fields').textContent = b.columns.length;
+  document.getElementById('stat-selected').textContent = state.selectedRows.size;
+}
+
+// ─────────────────────────────────────────────
+//  MODAL HELPER
+// ─────────────────────────────────────────────
+function showPanel(html) {
+  let overlay = document.getElementById('panel-overlay');
+  overlay.style.display = 'flex';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.15s';
+  overlay.innerHTML = `<div class="panel">${html}</div>`;
+  overlay.onclick = e => { if (e.target === overlay) closePanel(); };
+}
+function closePanel() {
+  document.getElementById('panel-overlay').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+//  MAIN RENDER
+// ─────────────────────────────────────────────
+function render() {
+  const ws = currentWorkspace();
+  const b  = currentBase();
+  if (b) document.getElementById('base-name-input').value = b.name;
+  if (ws) {
+    const wsBc = document.getElementById('ws-breadcrumb');
+    if (wsBc) wsBc.textContent = ws.emoji + ' ' + ws.name;
+  }
+  renderSidebar();
+  renderGrid();
+  switchView(state.currentView);
+  updateStats();
+  updateAlertBadge();
+}
+
+// ─────────────────────────────────────────────
+//  KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closePanel();
+    closeRowPanel();
+  }
+  if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') addRow();
+  if ((e.ctrlKey||e.metaKey) && e.key === 'e') { e.preventDefault(); exportData(); }
+});
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+load();
+render();
+// Run alerts on load to check existing data
+setTimeout(runAlertRules, 500);
+
+// Auto-save indicator
+setInterval(() => {
+  save();
+}, 5000);
+</script>
+</body>
+</html>
